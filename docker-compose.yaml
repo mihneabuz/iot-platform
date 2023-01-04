@@ -1,0 +1,8 @@
+version: "3.1"
+services:
+
+  rabbitmq:
+    container_name: iot-rabbitmq
+    image: rabbitmq
+    ports:
+      - 1883:5672
