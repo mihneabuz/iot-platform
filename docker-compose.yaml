@@ -1,8 +1,19 @@
 version: "3.1"
 services:
 
-  rabbitmq:
-    container_name: iot-rabbitmq
-    image: rabbitmq
+  mosquitto:
+    container_name: iot-mosquitto
+    image: eclipse-mosquitto
     ports:
-      - 1883:5672
+      - 1883:1883
+      - 9001:9001
+    volumes:
+      - ./mosquitto:/mosquitto/config
+
+  ingestor:
+    container_name: iot-ingestor
+    build:
+      dockerfile: Dockerfile
+      context: ./ingestor
+    links:
+      - mosquitto
