@@ -9,11 +9,47 @@ services:
       - 9001:9001
     volumes:
       - ./mosquitto:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+    networks:
+      - data-pipeline
 
   ingestor:
     container_name: iot-ingestor
     build:
       dockerfile: Dockerfile
       context: ./ingestor
+    environment:
+      DEBUG_DATA_FLOW: 1
+      MQTT_HOST: mosquitto
+      INFLUX_HOST: influx
+      INFLUXDB_USERNAME: influxdb
+      INFLUXDB_PASSWORD: password
     links:
       - mosquitto
+      - influx
+    networks:
+      - data-pipeline
+
+  influx:
+    container_name: iot-influx
+    image: influxdb:latest
+    ports:
+      - 8086:8086
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: influxdb
+      DOCKER_INFLUXDB_INIT_PASSWORD: password
+      DOCKER_INFLUXDB_INIT_ORG: upb
+      DOCKER_INFLUXDB_INIT_BUCKET: iot
+    volumes:
+      - influx-data:/var/lib/influxdb2
+      - ./influxdb:/etc/influxdb2
+    networks:
+      - data-pipeline
+
+volumes:
+  influx-data:
+  mosquitto-data:
+
+networks:
+  data-pipeline:
