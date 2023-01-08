@@ -1,0 +1,21 @@
+Buzatu-Pahontu Mihnea-Nicolae
+343C3
+
+Am ales sa scriu adaptorul in Rust folosind:
+ - tokio pentru async runtime
+ - serde(_json) pentru deserializare
+ - paho_mqtt pentru mqtt
+ - influxdb pentru comunicarea cu influx
+
+Adptorul se aboneaza la broker cu "#" si, pentru fiecare mesaj primit,
+face deserializare json si trimite la influxdb doar field-urile ce contin
+numere
+
+Pentru influxdb am ales sa folosesc versiunea 1.8, datoorita configuratiei
+mai usoara si compatibilitatii cu crate-ul de rust folosit
+
+In grafana am configurat un data source de tip influxdb si doua dashboarduri
+cu cate doua panel-uri fiecare. Pentru a putea implementa panel-ul cu valorile
+bateriilor, am adaugat la fiecare intrare din influxdb un tag "station" care
+specifica statia de la care vin masuratorile. Dupa am folosit group by in
+query pentru a agrega dupa statie

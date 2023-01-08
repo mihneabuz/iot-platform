@@ -32,7 +32,7 @@ services:
       - influx
     networks:
       - data-mqtt
-      - data-persistent
+      - data-influx
 
   influx:
     container_name: iot-influx
@@ -49,7 +49,7 @@ services:
     volumes:
       - influx-data:/var/lib/influxdb
     networks:
-      - data-persistent
+      - data-influx
       - data-visualization
 
   grafana:
@@ -80,5 +80,5 @@ volumes:
 
 networks:
   data-mqtt:
-  data-persistent:
+  data-influx:
   data-visualization:
