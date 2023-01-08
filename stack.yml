@@ -1,0 +1,79 @@
+version: "3.9"
+services:
+
+  mosquitto:
+    container_name: iot-mosquitto
+    image: eclipse-mosquitto:2
+    volumes:
+      - ./mosquitto:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+    networks:
+      - data-mqtt
+
+  influx:
+    container_name: iot-influx
+    image: influxdb:1.8
+    ports:
+      - 8086:8086
+    environment:
+      INFLUXDB_DB: iot
+      INFLUXDB_ADMIN_USER: influxdb
+      INFLUXDB_ADMIN_PASSWORD: password
+      INFLUXDB_HTTP_AUTH_ENABLED: "true"
+      INFLUXDB_META_DIR: /var/lib/influxdb/meta2
+      INFLUXDB_RETENTION_ENABLED: "false"
+    volumes:
+      - influx-data:/var/lib/influxdb
+    networks:
+      - data-influx
+      - data-visualization
+
+  ingestor:
+    container_name: iot-ingestor
+    image: mihneabuz/sprc:ingestor
+    environment:
+      DEBUG_DATA_FLOW: 1
+      MQTT_HOST: mosquitto
+      INFLUX_HOST: influx
+      INFLUX_USERNAME: influxdb
+      INFLUX_PASSWORD: password
+    depends_on:
+      - mosquitto
+      - influx
+    links:
+      - mosquitto
+      - influx
+    networks:
+      - data-mqtt
+      - data-influx
+
+  grafana:
+    container_name: iot-grafana
+    image: grafana/grafana:latest
+    ports:
+      - 80:3000
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana:/etc/grafana/provisioning
+    environment:
+      GF_SECURITY_ADMIN_USER: asistent
+      GF_SECURITY_ADMIN_PASSWORD: grafanaSPRC2021
+      INFLUX_HOST: influx
+      INFLUX_USERNAME: influxdb
+      INFLUX_PASSWORD: password
+    depends_on:
+      - influx
+    links:
+      - influx
+    networks:
+      - data-visualization
+
+volumes:
+  influx-data:
+  mosquitto-data:
+  grafana-data:
+
+networks:
+  data-mqtt:
+  data-influx:
+  data-visualization:
