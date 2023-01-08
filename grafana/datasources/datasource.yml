@@ -1,0 +1,13 @@
+apiVersion: 1
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    uid: vZUzYK2Vk
+    access: proxy
+    database: iot
+    user: ${INFLUX_USERNAME}
+    url: http://${INFLUX_HOST}:8086
+    isDefault: true
+    editable: true
+    secureJsonData:
+      password: ${INFLUX_PASSWORD}

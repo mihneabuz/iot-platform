@@ -47,6 +47,8 @@ async fn main() -> Result<()> {
 
             let mut query = Timestamp::from(timestamp).into_query("iot");
 
+            query = query.add_tag("station", prefix.split_once(".").unwrap().0);
+
             for (key, value) in payload.iter() {
                 if value.is_number() {
                     let key = format!("{}.{}", prefix, key);

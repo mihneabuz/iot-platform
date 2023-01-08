@@ -3,7 +3,7 @@ services:
 
   mosquitto:
     container_name: iot-mosquitto
-    image: eclipse-mosquitto
+    image: eclipse-mosquitto:2
     ports:
       - 1883:1883
       - 9001:9001
@@ -11,7 +11,7 @@ services:
       - ./mosquitto:/mosquitto/config
       - mosquitto-data:/mosquitto/data
     networks:
-      - data-pipeline
+      - data-mqtt
 
   ingestor:
     container_name: iot-ingestor
@@ -22,34 +22,63 @@ services:
       DEBUG_DATA_FLOW: 1
       MQTT_HOST: mosquitto
       INFLUX_HOST: influx
-      INFLUXDB_USERNAME: influxdb
-      INFLUXDB_PASSWORD: password
+      INFLUX_USERNAME: influxdb
+      INFLUX_PASSWORD: password
+    depends_on:
+      - mosquitto
+      - influx
     links:
       - mosquitto
       - influx
     networks:
-      - data-pipeline
+      - data-mqtt
+      - data-persistent
 
   influx:
     container_name: iot-influx
-    image: influxdb:latest
+    image: influxdb:1.8
     ports:
       - 8086:8086
     environment:
-      DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: influxdb
-      DOCKER_INFLUXDB_INIT_PASSWORD: password
-      DOCKER_INFLUXDB_INIT_ORG: upb
-      DOCKER_INFLUXDB_INIT_BUCKET: iot
+      INFLUXDB_DB: iot
+      INFLUXDB_ADMIN_USER: influxdb
+      INFLUXDB_ADMIN_PASSWORD: password
+      INFLUXDB_HTTP_AUTH_ENABLED: "true"
+      INFLUXDB_META_DIR: /var/lib/influxdb/meta2
+      INFLUXDB_RETENTION_ENABLED: "false"
     volumes:
-      - influx-data:/var/lib/influxdb2
-      - ./influxdb:/etc/influxdb2
+      - influx-data:/var/lib/influxdb
     networks:
-      - data-pipeline
+      - data-persistent
+      - data-visualization
+
+  grafana:
+    container_name: iot-grafana
+    image: grafana/grafana:latest
+    ports:
+      - 80:3000
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana:/etc/grafana/provisioning
+    environment:
+      GF_SECURITY_ADMIN_USER: asistent
+      GF_SECURITY_ADMIN_PASSWORD: grafanaSPRC2021
+      INFLUX_HOST: influx
+      INFLUX_USERNAME: influxdb
+      INFLUX_PASSWORD: password
+    depends_on:
+      - influx
+    links:
+      - influx
+    networks:
+      - data-visualization
 
 volumes:
   influx-data:
   mosquitto-data:
+  grafana-data:
 
 networks:
-  data-pipeline:
+  data-mqtt:
+  data-persistent:
+  data-visualization:

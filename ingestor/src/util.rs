@@ -13,8 +13,8 @@ pub fn get_influx_host() -> String {
 
 pub fn get_influx_auth() -> (String, String) {
     (
-        env::var("INFLUXDB_USERNAME").unwrap_or("influxdb".to_string()),
-        env::var("INFLUXDB_PASSWORD").unwrap_or("password".to_string()),
+        env::var("INFLUX_USERNAME").unwrap_or("influxdb".to_string()),
+        env::var("INFLUX_PASSWORD").unwrap_or("password".to_string()),
     )
 }
 
